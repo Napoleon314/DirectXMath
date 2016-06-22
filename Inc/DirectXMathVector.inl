@@ -6760,6 +6760,11 @@ inline XMVECTOR XM_CALLCONV XMVector2Dot
     return vcombine_f32( vTemp, vTemp );
 #elif defined(_XM_SSE4_INTRINSICS_)
     return _mm_dp_ps( V1, V2, 0x3f );
+#elif defined(_XM_SSE3_INTRINSICS_)
+    XMVECTOR vLengthSq = _mm_mul_ps(V1, V2);
+    XMVECTOR vTemp = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = XM_PERMUTE_PS(vTemp, _MM_SHUFFLE(0, 0, 0, 0));
+    return vLengthSq;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V1,V2);
@@ -6847,6 +6852,12 @@ inline XMVECTOR XM_CALLCONV XMVector2ReciprocalLengthEst
 #elif defined(_XM_SSE4_INTRINSICS_)
     XMVECTOR vTemp = _mm_dp_ps( V, V, 0x3f );
     return _mm_rsqrt_ps( vTemp );
+#elif defined(_XM_SSE3_INTRINSICS_)
+    XMVECTOR vLengthSq = _mm_mul_ps(V, V);
+    XMVECTOR vTemp = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = _mm_rsqrt_ss(vTemp);
+    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    return vLengthSq;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V,V);
@@ -6892,6 +6903,13 @@ inline XMVECTOR XM_CALLCONV XMVector2ReciprocalLength
     XMVECTOR vTemp = _mm_dp_ps( V, V, 0x3f );
     XMVECTOR vLengthSq = _mm_sqrt_ps( vTemp );
     return _mm_div_ps( g_XMOne, vLengthSq );
+#elif defined(_XM_SSE3_INTRINSICS_)
+    XMVECTOR vLengthSq = _mm_mul_ps(V,V);
+    XMVECTOR vTemp = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = _mm_sqrt_ss(vTemp);
+    vLengthSq = _mm_div_ss(g_XMOne, vLengthSq);
+    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    return vLengthSq;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V,V);
@@ -6935,6 +6953,12 @@ inline XMVECTOR XM_CALLCONV XMVector2LengthEst
 #elif defined(_XM_SSE4_INTRINSICS_)
     XMVECTOR vTemp = _mm_dp_ps( V, V, 0x3f );
     return _mm_sqrt_ps( vTemp );
+#elif defined(_XM_SSE3_INTRINSICS_)
+    XMVECTOR vLengthSq = _mm_mul_ps(V, V);
+    XMVECTOR vTemp = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = _mm_sqrt_ss(vTemp);
+    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    return vLengthSq;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V,V);
@@ -6983,6 +7007,12 @@ inline XMVECTOR XM_CALLCONV XMVector2Length
 #elif defined(_XM_SSE4_INTRINSICS_)
     XMVECTOR vTemp = _mm_dp_ps( V, V, 0x3f );
     return _mm_sqrt_ps( vTemp );
+#elif defined(_XM_SSE3_INTRINSICS_)
+    XMVECTOR vLengthSq = _mm_mul_ps(V, V);
+    XMVECTOR vTemp = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = _mm_sqrt_ss(vTemp);
+    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    return vLengthSq;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V,V);
@@ -7026,6 +7056,13 @@ inline XMVECTOR XM_CALLCONV XMVector2NormalizeEst
     XMVECTOR vTemp = _mm_dp_ps( V, V, 0x3f );
     XMVECTOR vResult = _mm_rsqrt_ps( vTemp );
     return _mm_mul_ps(vResult, V);
+#elif defined(_XM_SSE3_INTRINSICS_)
+    XMVECTOR vLengthSq = _mm_mul_ps(V, V);
+    vLengthSq = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = _mm_rsqrt_ss(vLengthSq);
+    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    vLengthSq = _mm_mul_ps(vLengthSq, V);
+    return vLengthSq;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V,V);
@@ -7102,6 +7139,29 @@ inline XMVECTOR XM_CALLCONV XMVector2Normalize
     XMVECTOR vTemp1 = _mm_andnot_ps(vLengthSq,g_XMQNaN);
     XMVECTOR vTemp2 = _mm_and_ps(vResult,vLengthSq);
     vResult = _mm_or_ps(vTemp1,vTemp2);
+    return vResult;
+#elif defined(_XM_SSE3_INTRINSICS_)
+    // Perform the dot product on x and y only
+    XMVECTOR vLengthSq = _mm_mul_ps(V, V);
+    vLengthSq = _mm_hadd_ps(vLengthSq, vLengthSq);
+    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    // Prepare for the division
+    XMVECTOR vResult = _mm_sqrt_ps(vLengthSq);
+    // Create zero with a single instruction
+    XMVECTOR vZeroMask = _mm_setzero_ps();
+    // Test for a divide by zero (Must be FP to detect -0.0)
+    vZeroMask = _mm_cmpneq_ps(vZeroMask, vResult);
+    // Failsafe on zero (Or epsilon) length planes
+    // If the length is infinity, set the elements to zero
+    vLengthSq = _mm_cmpneq_ps(vLengthSq, g_XMInfinity);
+    // Reciprocal mul to perform the normalization
+    vResult = _mm_div_ps(V, vResult);
+    // Any that are infinity, set to zero
+    vResult = _mm_and_ps(vResult, vZeroMask);
+    // Select qnan or result based on infinite length
+    XMVECTOR vTemp1 = _mm_andnot_ps(vLengthSq, g_XMQNaN);
+    XMVECTOR vTemp2 = _mm_and_ps(vResult, vLengthSq);
+    vResult = _mm_or_ps(vTemp1, vTemp2);
     return vResult;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y only
