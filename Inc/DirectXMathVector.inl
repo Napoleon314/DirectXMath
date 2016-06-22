@@ -6761,10 +6761,10 @@ inline XMVECTOR XM_CALLCONV XMVector2Dot
 #elif defined(_XM_SSE4_INTRINSICS_)
     return _mm_dp_ps( V1, V2, 0x3f );
 #elif defined(_XM_SSE3_INTRINSICS_)
-    XMVECTOR vLengthSq = _mm_mul_ps(V1, V2);
-    XMVECTOR vTemp = _mm_hadd_ps(vLengthSq, vLengthSq);
-    vLengthSq = XM_PERMUTE_PS(vTemp, _MM_SHUFFLE(0, 0, 0, 0));
-    return vLengthSq;
+    XMVECTOR vDot = _mm_mul_ps(V1, V2);
+    vDot = _mm_hadd_ps(vDot, vDot);
+    vDot = _mm_moveldup_ps(vDot);
+    return vDot;
 #elif defined(_XM_SSE_INTRINSICS_)
     // Perform the dot product on x and y
     XMVECTOR vLengthSq = _mm_mul_ps(V1,V2);
@@ -7144,7 +7144,7 @@ inline XMVECTOR XM_CALLCONV XMVector2Normalize
     // Perform the dot product on x and y only
     XMVECTOR vLengthSq = _mm_mul_ps(V, V);
     vLengthSq = _mm_hadd_ps(vLengthSq, vLengthSq);
-    vLengthSq = XM_PERMUTE_PS(vLengthSq, _MM_SHUFFLE(0, 0, 0, 0));
+    vLengthSq = _mm_moveldup_ps(vLengthSq);
     // Prepare for the division
     XMVECTOR vResult = _mm_sqrt_ps(vLengthSq);
     // Create zero with a single instruction
